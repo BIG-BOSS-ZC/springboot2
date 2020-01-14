@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>登录</title>
+    <link rel="stylesheet" href="/static/layui/css/layui.css"/>
+    <script src="/static/layui/layui.js"></script>
+    <script src="/static/js/jquery-3.4.1.min.js"></script>
+    <style>
+        .layui-carousel img{
+            margin: 0 35%;
+        }
+    </style>
+</head>
+<body>
+<div th:include="header.html"></div>
+
+<div class="layui-carousel" id="lbimgs">
+    <div carousel-item>
+        <div><img src="/static/img/home/01.jpg"/></div>
+        <div><img id="img2" lay-src="/static/img/home/02.jpg"/></div>
+        <div><img src="/static/img/home/03.jpg"/></div>
+        <div><img src="/static/img/home/04.jpg"/></div>
+        <div><img src="/static/img/home/05.jpg"/></div>
+    </div>
+</div>
+<!-- 条目中可以是任意内容，如：<img src=""> -->
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="detail">查看</a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+
+    <!-- 这里同样支持 laytpl 语法，如： -->
+    {{#  if(d.auth > 2){ }}
+    <a class="layui-btn layui-btn-xs" lay-event="check">审核</a>
+    {{#  } }}
+</script>
+
+<script type="text/html" id="toolbarDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="add">添加</a>
+    <a class="layui-btn layui-btn-xs" lay-event="reload">刷新</a>
+</script>
+<div><div class="layui-col-md8 layui-col-md-offset2">
+    <table id="mytb" lay-filter="test" lay-data="{id: 'idTest'}"></table></div>
+</div>
+
+<script th:inline="none">
+    var isAdd=true;
+    var elems={};
+    layui.use('table', function(){
+        var table = layui.table;
+
+        elems.table=table;
+        //第一个实例
+        table.render({
+            elem: '#mytb'
+            ,method: "post"
+            ,url: '/user/table' //数据接口
+            ,page: true//开启分页
+            ,toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+            ,defaultToolbar: ['filter', 'exports', 'print', { //自定义头部工具栏右侧图标。如无需自定义，去除该参数即可
+                title: '提示'
+                ,layEvent: 'LAYTABLE_TIPS'
+                ,icon: 'layui-icon-tips'
+            }]
+            ,cols: [[
+                {field: 'name', title: '名称', width:200}
+                ,{field: 'money', title: '价格', width:200, sort: true}
+                ,{field: 'miaoshu', title: '描述', width:200}
+                ,{field: 'id', title: 'id', width:200, sort: true}
+                ,{title: '操作',fixed: 'right',toolbar: '#barDemo', width:200} //这里的toolbar值是模板元素的选择器
+            ]],
+            width:1000
+        });
+        table.on('toolbar(test)', function(obj){
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch(obj.event){
+                case 'add':
+                    $("#e_name").val("");
+                    layer.open({
+                        type: 1,
+                        content: $('#edit') //这里content是一个DOM，注意：最好该元素要存放在body最外层，否则可能被其它的相对元素所影响
+                        , title: "装备信息"
+                    });
+                    isAdd = true;
+                    break;
+                case 'reload':
+                    table.reload('mytb', {
+                        url: '/user/table'
+                        ,where: {} //设定异步数据接口的额外参数
+                    });
+                    break;
+            };
+        });
+
+
+        //监听工具条
+        table.on('tool(test)', function(obj){ //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
+            var data = obj.data; //获得当前行数据
+            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+            var tr = obj.tr; //获得当前行 tr 的 DOM 对象（如果有的话）
+
+            if(layEvent === 'detail'){ //查看
+                //do somehing
+                $('#d_name').text(data.name);
+                $('#d_money').text(data.money);
+                $('#d_describe').text(data.describe);
+                $('#d_id').text(data.id);
+                layer.open({
+                    type:1,
+                    content: $('#detail'),
+                    title:'查看'
+                })
+
+            } else if(layEvent === 'del'){ //删除
+                layer.confirm('真的删除行么', function(index){
+                    obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                    $.ajax({
+                        url:'/user/del'+obj.data.id
+                    })
+                    layer.close(index);
+                    //向服务端发送删除指令
+                });
+            } else if(layEvent === 'edit'){ //编辑
+                //do something
+                $('#e_name').val(data.name);
+                $('#e_money').val(data.money);
+                $('#e_describe').val(data.miaoshu);
+                $('#e_id').text(data.id);
+                layer.open({
+                    type: 1,
+                    content: $('#edit') //这里content是一个DOM，注意：最好该元素要存放在body最外层，否则可能被其它的相对元素所影响
+                    , title: "装备信息"
+                    , end: () => {
+                    obj.update({
+                        name:$('#e_name').val(),
+                        money:$('#e_money').val(),
+                        miaoshu:$('#e_describe').val()
+                    });
+            }
+            });
+                isAdd = false;
+                //同步更新缓存对应的值
+            } else if(layEvent === 'LAYTABLE_TIPS'){
+                layer.alert('Hi，头部工具栏扩展的右侧图标。');
+            }
+        });
+    });
+
+    function save() {
+        console.log("save!!!")
+        $.ajax({
+            url: isAdd ? "/user/table/add" : "/user/table/edit",
+            type: "post",
+            data: {
+                name: $("#e_name").val(),
+                money:$("#e_money").val(),
+                miaoshu: $('#e_describe').val(),
+                id: $('#e_id').text()
+            },
+            success: (data) => {
+            if (isAdd) {
+                elems.table.reload('mytb', {
+                    url: '/user/table'
+                });
+            }
+            layer.close(layer.index);
+    }
+    });
+    }
+
+
+</script>
+<div id="detail" style="display: none;">
+    <form class="layui-form" action="">
+        <div class="layui-form-item">
+            <label class="layui-form-label">名称</label>
+            <label class="layui-form-label" id="d_name"></label>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">价格</label>
+            <label class="layui-form-label" id="d_money"></label>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">描述</label>
+            <label class="layui-form-label" id="d_describe"></label>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">id</label>
+            <label class="layui-form-label" id="d_id"></label>
+        </div>
+    </form>
+</div>
+<div id="edit" style="display: none">
+    <form class="layui-form" action="">
+        <div class="layui-form-item">
+            <label class="layui-form-label">名称</label>
+            <div class="layui-input-block">
+                <input type="text" id="e_name" name="name" lay-verify="title" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">价格</label>
+            <div class="layui-input-block">
+                <input type="text" id="e_money" name="money" lay-verify="title" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">描述</label>
+            <div class="layui-input-block">
+                <input type="text" id="e_describe" name="describe" lay-verify="title" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-form-item">
+                <label class="layui-form-label">id</label>
+                <label class="layui-form-label" id="e_id"></label>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block" id="e_save">
+                <input type="button" class="layui-btn" onclick="save()" value="保存">
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    layui.use('carousel', function(){
+        var carousel = layui.carousel;
+        //建造实例
+        carousel.render({
+            elem: '#lbimgs'
+            ,width: '100%' //设置容器宽度
+            ,arrow: 'always' //始终显示箭头
+            //,anim: 'updown' //切换动画方式
+        });
+    });
+
+    layui.use('flow', function(){
+        var flow = layui.flow;
+        //信息流
+        flow.load(document.getElementById("img2").onclick);
+
+        //图片懒加载
+        flow.lazyimg(document.getElementById("img2").onclick);
+    });
+</script>
+</body>
+</html>

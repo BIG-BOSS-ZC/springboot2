@@ -1,0 +1,16 @@
+.tb{
+    width: 500px;
+    height: auto;
+    border: 5px dashed darkkhaki;
+    text-align: center;
+    margin: 100px auto;
+    padding: 20px;
+}
+.error{
+    width: 300px;
+    height: auto;
+    text-align: center;
+    padding: 10px;
+    margin: 0 auto;
+    color: red;
+}
