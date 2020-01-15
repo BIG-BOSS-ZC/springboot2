@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
@@ -31,7 +32,7 @@ public class User {
     @Email(message = "邮箱格式不正确！")
     private String email;
     private String hobbit;
-    @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date birthday;
 
     public User(String name, String password) {

@@ -13,6 +13,7 @@ public class UserLoginInterceptor extends HandlerInterceptorAdapter {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         //1.取出URI
         String requestURI = request.getRequestURI();
+        System.out.println(requestURI);
         //2.判断是否是登录/注册页面，其他页面则需要拦截
         if(requestURI.contains("login")||requestURI.contains("register")){
             return true;

@@ -15,4 +15,16 @@
         </trim>
 
     </select>
+
+    <update id="updateUser">
+        UPDATE `test`.`userinfo` t
+        SET t.`phone_number` = #{phoneNumber}
+          , t.`email` = #{email}
+          ,t.`password`= #{password}
+          ,t.`sex`=#{sex}
+          ,t.`hobbit`=#{hobbit}
+          ,t.`birthday`=#{birthday}
+          ,t.`name`=#{name}
+        WHERE t.`id` = 1
+    </update>
 </mapper>

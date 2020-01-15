@@ -6,8 +6,6 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   thymeleaf:
     cache: false
-  mvc:
-    static-path-pattern: /static/**
 
 
 mybatis:

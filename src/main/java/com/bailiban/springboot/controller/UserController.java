@@ -58,7 +58,7 @@ public class UserController {
     }
 
     @PostMapping("update")
-    public String update(User user,HttpSession session){
+    public String update(@Validated User user,HttpSession session){
         System.out.println("[update]\t"+user.toString());
         int i = userService.updateUser(user);
         if(i!=0){
